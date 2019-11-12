@@ -38,6 +38,8 @@ var tmpl = template.Must(template.New("").Parse(`<html>
 </head>
 <body>
 go get {{.Host}}{{.Path}}
+<hr />
+{{ .Ua }}
 </body>
 </html>
 `))
@@ -64,11 +66,13 @@ func (g GopkgHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, er
 			Path string
 			Vcs  string
 			Uri  string
+			Ua   string
 		}{
 			Host: host,
 			Path: r.URL.Path,
 			Vcs:  cfg.Vcs,
 			Uri:  uri,
+			Ua:   r.Header.Get("User-Agent"),
 		})
 		if err != nil {
 			return http.StatusInternalServerError, err
