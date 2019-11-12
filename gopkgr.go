@@ -27,7 +27,7 @@ type Config struct {
 	Uri  string
 }
 
-type GopkgHandler struct {
+type GopkgrHandler struct {
 	Next    httpserver.Handler
 	Configs []Config
 }
@@ -42,7 +42,7 @@ go get {{.Host}}{{.Path}}
 </html>
 `))
 
-func (g GopkgHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
+func (g GopkgrHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 	for _, cfg := range g.Configs {
 		rExp, err := regexp.Compile(cfg.Path)
 		if err != nil || !rExp.MatchString(r.URL.Path) {
@@ -85,7 +85,7 @@ func setup(c *caddy.Controller) error {
 		return err
 	}
 	httpserver.GetConfig(c).AddMiddleware(func(next httpserver.Handler) httpserver.Handler {
-		return GopkgHandler{
+		return GopkgrHandler{
 			Configs: configs,
 			Next:    next,
 		}
