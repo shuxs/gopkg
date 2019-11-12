@@ -4,18 +4,18 @@ A Caddy plugin to add gopkg-like functionality to your own web sites.
 
 # Usage
 
-`gopkg [path] [repo-uri]`
+`gopkgr [path] [repo-uri]`
 
-`gopkg [path] [vcs] [repo-uri]`
+`gopkgr [path] [vcs] [repo-uri]`
 
 ```
 zikes.me {
   // default vcs is git
-  gopkg /multistatus https://github.com/zikes/multistatus
-  gopkg /chrisify https://github.com/zikes/chrisify
+  gopkgr /multistatus https://github.com/zikes/multistatus
+  gopkgr /github/([\w\-\.]+)/([\w\-]+) https://github.com/$1/$2
 
   // use mercurial
-  gopkg /myrepo hg https://bitbucket.org/zikes/myrepo
+  gopkgr /myrepo hg https://bitbucket.org/zikes/myrepo
 }
 ```
 
