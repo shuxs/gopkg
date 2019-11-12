@@ -3,18 +3,19 @@
 //     gopkg [path] [vcs-type] [uri]
 //     gopkg [path] [uri]
 
-package gopkg
+package gopkgr
 
 import (
 	"html/template"
 	"net/http"
+	"regexp"
 
-	"github.com/mholt/caddy"
-	"github.com/mholt/caddy/caddyhttp/httpserver"
+	"github.com/caddyserver/caddy"
+	"github.com/caddyserver/caddy/caddyhttp/httpserver"
 )
 
 func init() {
-	caddy.RegisterPlugin("gopkg", caddy.Plugin{
+	caddy.RegisterPlugin("gopkgr", caddy.Plugin{
 		ServerType: "http",
 		Action:     setup,
 	})
@@ -42,33 +43,32 @@ go get {{.Host}}{{.Path}}
 `))
 
 func (g GopkgHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
-	for i := range g.Configs {
-
-		// Check if the request path should be handled by Gopkg middleware
-		if !httpserver.Path(r.URL.Path).Matches(g.Configs[i].Path) {
+	for _, cfg := range g.Configs {
+		rExp, err := regexp.Compile(cfg.Path)
+		if err != nil || !rExp.MatchString(r.URL.Path) {
 			continue
 		}
 
-		cfg := &g.Configs[i]
+		uri := rExp.ReplaceAllString(r.URL.Path, cfg.Uri)
 
 		// Check if the request path contains go-get=1
 		if r.FormValue("go-get") != "1" {
-			http.Redirect(w, r, cfg.Uri, http.StatusTemporaryRedirect)
+			http.Redirect(w, r, uri, http.StatusTemporaryRedirect)
 			return 0, nil
 		}
 
 		host := r.Host
 
-		err := tmpl.Execute(w, struct {
+		err = tmpl.Execute(w, struct {
 			Host string
 			Path string
 			Vcs  string
 			Uri  string
 		}{
 			Host: host,
-			Path: cfg.Path,
+			Path: r.URL.Path,
 			Vcs:  cfg.Vcs,
-			Uri:  cfg.Uri,
+			Uri:  uri,
 		})
 		if err != nil {
 			return http.StatusInternalServerError, err
